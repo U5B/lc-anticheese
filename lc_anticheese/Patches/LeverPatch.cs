@@ -29,6 +29,11 @@ namespace lc_anticheese.Patches
 		{
 			// never allow it for other players other than the host
 			ulong playerStartGameId = rpcParams.Server.Receive.SenderClientId;
+			// server can sometimes send rpcs through the handler
+			if (playerStartGameId == GameNetworkManager.Instance.localPlayerController.actualClientId)
+			{
+				return true;
+			}
 			PlayerControllerB player = null;
 			foreach (PlayerControllerB p in StartOfRound.Instance.allPlayerScripts)
 			{
@@ -49,18 +54,24 @@ namespace lc_anticheese.Patches
 			return false;
 		}
 
-		// [HarmonyPatch(typeof(StartOfRound), "StartGameServerRpc")]
-		// [HarmonyPrefix]
-		// private static bool StartGameServerRpcPatch(StartOfRound __instance)
-		// {
-		// 	return true;
-		// }
+		[HarmonyPatch(typeof(StartOfRound), "StartGameServerRpc")]
+		[HarmonyPrefix]
+		private static bool StartGameServerRpcPatch(StartOfRound __instance)
+		{
+			UnityEngine.Object.FindObjectOfType<StartMatchLever>().PlayLeverPullEffectsClientRpc(true);
+			return true;
+		}
 
 		[HarmonyPatch(typeof(StartOfRound), "__rpc_handler_2028434619")]
 		[HarmonyPrefix]
 		private static bool EndGameServerRpcHandlerPatch(__RpcParams rpcParams)
 		{
 			ulong playerEndGameId = rpcParams.Server.Receive.SenderClientId;
+			// server can sometimes send rpcs through the handler
+			if (playerEndGameId == GameNetworkManager.Instance.localPlayerController.actualClientId)
+			{
+				return true;
+			}
 			PlayerControllerB player = null;
 			foreach (PlayerControllerB p in StartOfRound.Instance.allPlayerScripts)
 			{
@@ -87,12 +98,13 @@ namespace lc_anticheese.Patches
 			return false;
 		}
 
-		// [HarmonyPatch(typeof(StartOfRound), "EndGameServerRpc")]
-		// [HarmonyPrefix]
-		// private static bool EndGameServerRpcPatch(StartOfRound __instance)
-		// {
-		// 	return true;
-		// }
+		[HarmonyPatch(typeof(StartOfRound), "EndGameServerRpc")]
+		[HarmonyPrefix]
+		private static bool EndGameServerRpcPatch(StartOfRound __instance)
+		{
+			UnityEngine.Object.FindObjectOfType<StartMatchLever>().PlayLeverPullEffectsClientRpc(false);
+			return true;
+		}
 
 		private static void EndGameAction(PlayerControllerB player)
 		{
@@ -104,12 +116,16 @@ namespace lc_anticheese.Patches
 			{
 				Plugin.SendWarning("A unknown player started the ship early!");
 			}
-			// this doesn't seem to help resync clients with the lever state...
-			UnityEngine.Object.FindObjectOfType<StartMatchLever>().PlayLeverPullEffectsClientRpc(false);
 		}
 
 		private static bool ShouldEndGame(PlayerControllerB playerPulled)
 		{
+			PlayerControllerB playerHost = GameNetworkManager.Instance.localPlayerController;
+			bool isHost = playerHost.actualClientId == playerPulled.actualClientId;
+			if (isHost)
+			{
+				return true;
+			}
 			StartOfRound __instance = StartOfRound.Instance;
 			// find actual player
 			if (playerPulled == null || !playerPulled.isPlayerControlled)
@@ -125,7 +141,6 @@ namespace lc_anticheese.Patches
 			}
 
 			// find host
-			PlayerControllerB playerHost = GameNetworkManager.Instance.localPlayerController;
 			// prevent players from leaving when selling unless they are the host
 			if (!playerHost.isPlayerDead && __instance.currentLevel.name == "CompanyBuildingLevel")
 			{
@@ -151,9 +166,9 @@ namespace lc_anticheese.Patches
 					continue;
 				}
 				// if dead or near ship, is not missing
+				totalValidPlayers++;
 				if (player.isPlayerDead || IsNearShip(player))
 				{
-					totalValidPlayers++;
 					continue;
 				}
 				missingPlayers++;

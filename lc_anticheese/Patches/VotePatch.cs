@@ -13,6 +13,11 @@ namespace lc_anticheese.Patches
 		private static bool SetShipLeaveEarlyServerRpcHandlerPatch(__RpcParams rpcParams)
 		{
 			ulong playerVoteId = rpcParams.Server.Receive.SenderClientId;
+			// server can sometimes send rpcs through the handler
+			if (playerVoteId == GameNetworkManager.Instance.localPlayerController.actualClientId)
+			{
+				return true;
+			}
 			PlayerControllerB player = null;
 			foreach (PlayerControllerB p in StartOfRound.Instance.allPlayerScripts)
 			{

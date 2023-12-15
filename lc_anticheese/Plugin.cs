@@ -5,6 +5,9 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using BepInEx.Configuration;
 using HarmonyLib;
+using Steamworks;
+using System.Linq;
+using System.Collections;
 using lc_anticheese.Patches;
 
 namespace lc_anticheese
@@ -32,5 +35,16 @@ namespace lc_anticheese
 			HUDManager.Instance.AddToErrorLog(text, 0);
 			HUDManager.Instance.AddChatMessage(text, "Lever");
 		}
+
+		// public static bool IsFriend(ulong steamid)
+		// {
+		// 	System.Collections.Generic.List<Friend> friends = SteamFriends.GetFriends().ToList<Friend>();
+		// 	Friend friend = friends.First(x => x.Id == steamid);
+		// 	if (!friend.IsFriend)
+		// 	{
+		// 		return false;
+		// 	}
+		// 	return true;
+		// }
 	}
 }

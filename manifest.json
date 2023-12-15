@@ -1,7 +1,7 @@
 {
 	"name": "Anticheese",
-	"version_number": "1.0.0",
-	"website_url": "https://github.com/U5B/lc_anticheese",
-	"description": "Prevent petty children from ending the game early by pulling the lever",
+	"version_number": "1.1.0",
+	"website_url": "https://github.com/U5B/lc-anticheese",
+	"description": "Prevent petty players from ending the game early by pulling the lever",
 	"dependencies": []
 }
