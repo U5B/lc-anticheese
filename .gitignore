@@ -5,3 +5,6 @@
 
 # dependencies
 /dlls/
+
+# thunderstore
+**/ZipMeUp/
